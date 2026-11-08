@@ -1,0 +1,3 @@
+[submodule "vendor/dji_osmo_sdk"]
+	path = vendor/dji_osmo_sdk
+	url = https://github.com/dji-sdk/Osmo-GPS-Controller-Demo.git

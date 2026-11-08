@@ -1,0 +1,72 @@
+name: Build and release firmware
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }} firmware
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [esp32, esp32s3]
+    steps:
+      - name: Check out repository and DJI submodule
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build and merge firmware images
+        uses: espressif/esp-idf-ci-action@v1
+        with:
+          esp_idf_version: v5.5.6
+          target: ${{ matrix.target }}
+          command: idf.py build && idf.py merge-bin -o cm8-action-gateway-full.bin
+
+      - name: Package firmware files
+        shell: bash
+        run: |
+          mkdir -p dist
+          cp build/cm8_action_gateway.bin "dist/cm8-action-gateway-${{ matrix.target }}-ota.bin"
+          cp build/cm8-action-gateway-full.bin "dist/cm8-action-gateway-${{ matrix.target }}-full.bin"
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-${{ matrix.target }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Publish GitHub Release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download firmware artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: firmware-*
+          path: dist
+          merge-multiple: true
+
+      - name: Create release and attach firmware
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION_TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$VERSION_TAG" dist/* \
+            --title "$VERSION_TAG" \
+            --generate-notes
