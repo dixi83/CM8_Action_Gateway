@@ -1,7 +1,18 @@
 # CM8 Action Gateway
 
-ESP-IDF gateway firmware that reads controls from a Funsnap CM8 remote and
+ESP-IDF gateway firmware that reads controls from a Funsnap CM8 Gimbal remote and
 controls a DJI Osmo Action camera.
+
+## Parts used
+
+- [Funsnap CM8](https://s.click.aliexpress.com/e/_c4CEUfpl)
+- [DJI Osmo Action 4](https://s.click.aliexpress.com/e/_c2utJGzt)
+- [ESP32-S3 Super Mini](https://s.click.aliexpress.com/e/_c3oIinKn)
+
+These are affiliate links. I may earn a commission from qualifying purchases.
+
+A build guide explaining how to open the CM8 and connect all the components
+will be added here.
 
 ## Third-party SDK dependency
 
